@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <style>
+        body { font-family: Arial; padding: 30px; background: #f4f6f8; }
+        table { width: 100%; background: white; border-collapse: collapse; }
+        th, td { padding: 12px; border-bottom: 1px solid #ddd; }
+        th { background: #333; color: white; }
+        a {
+            padding: 6px 10px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .failed { color: red; }
+        .published { color: green; }
+    </style>
+</head>
+<body>
+
+<h2>📊 Admin Dashboard</h2>
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Topic</th>
+        <th>Title</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+
+    {% for blog in blogs %}
+    <tr>
+        <td>{{ blog[0] }}</td>
+        <td>{{ blog[1] }}</td>
+        <td>{{ blog[2] }}</td>
+        <td class="{{ blog[3] }}">{{ blog[3] }}</td>
+        <td>
+            <a href="/preview/{{ blog[0] }}">Preview</a>
+            <a href="/publish/{{ blog[0] }}">Publish</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

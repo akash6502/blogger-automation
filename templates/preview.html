@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+</head>
+<body>
+
+<h1>{{ title }}</h1>
+
+<div>
+    {{ content | safe }}
+</div>
+
+<hr>
+
+{% for img in images %}
+    <img src="{{ img[0] }}" alt="{{ img[1] }}" style="max-width:100%; margin-bottom:15px;">
+{% endfor %}
+
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Blogger AI</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f5f7fa;
+            text-align: center;
+            padding: 50px;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 400px;
+            margin: auto;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        input {
+            width: 90%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .loader {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .preview {
+            margin-top: 30px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>🧠 AI Blogger</h2>
+
+    <form method="POST" onsubmit="showLoader()">
+        <input type="text" name="topic" placeholder="Enter blog topic..." required>
+        <br>
+        <button type="submit">🚀 Generate Blog</button>
+    </form>
+
+    <div class="loader" id="loader">
+        ⏳ Generating blog... please wait...
+    </div>
+</div>
+
+{% if content %}
+<div class="container preview">
+    <h2>📄 Preview</h2>
+    <h3>{{ title }}</h3>
+    <div>{{ content | safe }}</div>
+
+    <form method="POST" action="/publish">
+        <input type="hidden" name="title" value="{{ title }}">
+        <input type="hidden" name="content" value="{{ content }}">
+        <button>✅ Publish to Blogger</button>
+    </form>
+</div>
+{% endif %}
+
+<script>
+function showLoader() {
+    document.getElementById("loader").style.display = "block";
+}
+</script>
+
+</body>
+</html>
