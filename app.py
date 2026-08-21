@@ -102,7 +102,6 @@ def publish(blog_id):
 
     return redirect("/admin")
 
-
 @app.route("/preview/<int:blog_id>")
 def preview(blog_id):
     blog = get_blog_by_id(blog_id)
