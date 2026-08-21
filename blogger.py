@@ -39,8 +39,6 @@ def publish_post(title, content):
         body=post
     ).execute()
 
-    print(posted)
-
     return posted
 
 def update_post(post_id, title, content):

@@ -51,8 +51,6 @@ def generate_blog(topic):
 
     html_content = re.sub(r"<h1>.*?</h1>", "", html_content, flags=re.IGNORECASE).strip()
 
-    print(html_content)
-
     # html_content = inject_image_into_blog(html_content, topic)
 
     # save_blog(topic, title, html_content)
@@ -104,7 +102,6 @@ def inject_image_into_blog_and_save_image_to_db(raw_html, topic):
     save_image_to_db(topic, image_url, alt_text)
 
     # 1. Replace the URL placeholder
-    processed_html = raw_html.replace("https://placehold.co/800x400?text=Blog+Image", image_url)
-
+    processed_html = re.sub(r"https://placehold\.co/800x400\?text=[^\"'\s>]+", image_url, raw_html)
     
     return processed_html

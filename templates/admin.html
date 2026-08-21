@@ -3,46 +3,135 @@
 <head>
     <title>Admin Dashboard</title>
     <style>
-        body { font-family: Arial; padding: 30px; background: #f4f6f8; }
-        table { width: 100%; background: white; border-collapse: collapse; }
-        th, td { padding: 12px; border-bottom: 1px solid #ddd; }
-        th { background: #333; color: white; }
-        a {
-            padding: 6px 10px;
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 30px; 
+            background: #f4f6f8; 
+            color: #333;
+        }
+
+        /* Top Header Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .dashboard-title {
+            margin: 0;
+            font-size: 24px;
+            color: #222;
+        }
+
+        /* Table styling */
+        table { 
+            width: 100%; 
+            background: white; 
+            border-collapse: collapse; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        th, td { 
+            padding: 12px 16px; 
+            border-bottom: 1px solid #eee; 
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th { 
+            background: #333; 
+            color: white; 
+            font-weight: 600;
+        }
+
+        /* Action Buttons Container & General Button Styling */
+        .action-cell {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: opacity 0.2s, background-color 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.85;
+        }
+
+        .btn-home {
+            background: #495057;
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .btn-preview {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-publish {
             background: #4CAF50;
             color: white;
-            text-decoration: none;
-            border-radius: 5px;
         }
-        .failed { color: red; }
-        .published { color: green; }
+
+        /* Status colors */
+        .failed { 
+            color: #d32f2f; 
+            font-weight: bold;
+        }
+        
+        .published { 
+            color: #2e7d32; 
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-<h2>📊 Admin Dashboard</h2>
+<div class="top-bar">
+    <h2 class="dashboard-title">📊 Admin Dashboard</h2>
+    <a href="/" class="btn btn-home">🏠 Home</a>
+</div>
 
 <table>
-    <tr>
-        <th>ID</th>
-        <th>Topic</th>
-        <th>Title</th>
-        <th>Status</th>
-        <th>Action</th>
-    </tr>
-
-    {% for blog in blogs %}
-    <tr>
-        <td>{{ blog[0] }}</td>
-        <td>{{ blog[1] }}</td>
-        <td>{{ blog[2] }}</td>
-        <td class="{{ blog[3] }}">{{ blog[3] }}</td>
-        <td>
-            <a href="/preview/{{ blog[0] }}">Preview</a>
-            <a href="/publish/{{ blog[0] }}">Publish</a>
-        </td>
-    </tr>
-    {% endfor %}
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Topic</th>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for blog in blogs %}
+        <tr>
+            <td>{{ blog[0] }}</td>
+            <td>{{ blog[1] }}</td>
+            <td>{{ blog[2] }}</td>
+            <td class="{{ blog[3] }}">{{ blog[3] }}</td>
+            <td>
+                <div class="action-cell">
+                    <a href="/preview/{{ blog[0] }}" class="btn btn-preview">Preview</a>
+                    <a href="/publish/{{ blog[0] }}" class="btn btn-publish">Publish</a>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 
 </body>

@@ -3,31 +3,88 @@
 <head>
     <title>Blogger AI</title>
     <style>
-        body {
-            font-family: Arial;
-            background: #f5f7fa;
-            text-align: center;
-            padding: 50px;
+        * {
+            box-sizing: border-box;
         }
 
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            text-align: center;
+            padding: 50px 20px;
+            margin: 0;
+            color: #333;
+        }
+
+        /* Top Navigation / Dashboard Button */
+        .top-nav {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+        }
+
+        .btn-admin {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            background: #2b303a;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            transition: all 0.25s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .btn-admin:hover {
+            background: #1a1d24;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+        }
+
+        .btn-admin:active {
+            transform: translateY(0) scale(0.97);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+        }
+
+        /* Main Containers */
         .container {
             background: white;
             padding: 30px;
             border-radius: 12px;
-            width: 400px;
-            margin: auto;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 480px;
+            margin: 40px auto 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
         }
 
-        input {
-            width: 90%;
-            padding: 12px;
+        .container h2 {
+            margin-top: 0;
+            color: #222;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 14px;
             border-radius: 8px;
             border: 1px solid #ccc;
-            font-size: 16px;
+            font-size: 15px;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        button {
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15);
+        }
+
+        /* Primary Action Buttons */
+        .btn-action {
+            width: 100%;
             margin-top: 15px;
             padding: 12px 20px;
             border: none;
@@ -35,34 +92,58 @@
             background: #4CAF50;
             color: white;
             font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2);
         }
 
-        button:hover {
-            background: #45a049;
+        .btn-action:hover {
+            background: #43a047;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-action:active {
+            transform: translateY(0) scale(0.98);
         }
 
         .loader {
             display: none;
             margin-top: 20px;
+            font-weight: 500;
+            color: #555;
         }
 
         .preview {
+            max-width: 800px;
             margin-top: 30px;
             text-align: left;
+        }
+
+        .preview h2 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
         }
     </style>
 </head>
 
 <body>
 
+<!-- Top Navigation Button -->
+<div class="top-nav">
+    <a href="/admin" class="btn-admin">
+        <span>📊</span>
+        <span>Admin Dashboard</span>
+    </a>
+</div>
+
 <div class="container">
     <h2>🧠 AI Blogger</h2>
 
     <form method="POST" onsubmit="showLoader()">
         <input type="text" name="topic" placeholder="Enter blog topic..." required>
-        <br>
-        <button type="submit">🚀 Generate Blog</button>
+        <button type="submit" class="btn-action">🚀 Generate Blog</button>
     </form>
 
     <div class="loader" id="loader">
@@ -79,7 +160,7 @@
     <form method="POST" action="/publish">
         <input type="hidden" name="title" value="{{ title }}">
         <input type="hidden" name="content" value="{{ content }}">
-        <button>✅ Publish to Blogger</button>
+        <button type="submit" class="btn-action">✅ Publish to Blogger</button>
     </form>
 </div>
 {% endif %}
