@@ -53,6 +53,27 @@ def save_blog(topic, title, content):
 
     conn.close()
 
+def get_statuses_by_topic(topics):
+    wanted = set()
+    for topic in topics:
+        topic = (topic or "").strip().lower()
+        if topic:
+            wanted.add(topic)
+    if not wanted:
+        return {}
+
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT topic, status FROM blogs")
+    rows = cursor.fetchall()
+    conn.close()
+
+    return {
+        topic.lower(): status
+        for topic, status in rows
+        if topic and topic.lower() in wanted
+    }
+
 def get_blog(topic):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
