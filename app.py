@@ -1,4 +1,8 @@
+import json
+import os
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+from werkzeug.middleware.proxy_fix import ProxyFix
 from config import Config
 from blogger import (
     ReauthRequired,
@@ -46,6 +50,16 @@ init_db()
 
 app = Flask(__name__)
 app.config.from_object(Config)
+PENDING_AUTH_FILE = "oauth_pending.json"
+PUBLIC_BASE_URL = (
+    os.getenv("OAUTH_BASE_URL") or os.getenv("RENDER_EXTERNAL_URL") or ""
+).strip().rstrip("/")
+
+if PUBLIC_BASE_URL:
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+    if PUBLIC_BASE_URL.startswith("https://"):
+        app.config["SESSION_COOKIE_SECURE"] = True
+        app.config["PREFERRED_URL_SCHEME"] = "https"
 
 def _generate_and_save(topic):
     title, html_content = generate_blog(topic)
@@ -54,8 +68,59 @@ def _generate_and_save(topic):
     return title
 
 
+def _oauth_redirect_uri():
+    if PUBLIC_BASE_URL:
+        return PUBLIC_BASE_URL + "/oauth2callback"
+    port = request.environ.get("SERVER_PORT", "5000")
+    return f"http://localhost:{port}/oauth2callback"
+
+
+def _authorization_response(redirect_uri):
+    query = request.query_string.decode()
+    if not query:
+        return redirect_uri
+    separator = "&" if "?" in redirect_uri else "?"
+    return f"{redirect_uri}{separator}{query}"
+
+
+def _save_pending_auth(state, redirect_uri, code_verifier, blog_id):
+    pending = {}
+    if os.path.exists(PENDING_AUTH_FILE):
+        try:
+            with open(PENDING_AUTH_FILE, encoding="utf-8") as handle:
+                pending = json.load(handle)
+        except (OSError, json.JSONDecodeError):
+            pending = {}
+    pending[state] = {
+        "redirect_uri": redirect_uri,
+        "code_verifier": code_verifier,
+        "blog_id": blog_id,
+    }
+    with open(PENDING_AUTH_FILE, "w", encoding="utf-8") as handle:
+        json.dump(pending, handle)
+
+
+def _pop_pending_auth(state):
+    if not state or not os.path.exists(PENDING_AUTH_FILE):
+        return None
+    try:
+        with open(PENDING_AUTH_FILE, encoding="utf-8") as handle:
+            pending = json.load(handle)
+    except (OSError, json.JSONDecodeError):
+        return None
+    record = pending.pop(state, None)
+    with open(PENDING_AUTH_FILE, "w", encoding="utf-8") as handle:
+        json.dump(pending, handle)
+    return record
+
+
 @app.route("/", methods=["GET", "POST"])
 def home():
+    if request.method == "GET" and request.args.get("state") and (
+        request.args.get("code") or request.args.get("error")
+    ):
+        return oauth2callback()
+
     if request.method == "POST":
         topic = request.form.get("topic")
         app.logger.info("Home route accessed")
@@ -155,34 +220,45 @@ def _clear_oauth_session():
 
 def _start_google_auth(blog_id):
     session.pop("oauth_resumed", None)
-    redirect_uri = url_for("oauth2callback", _external=True)
+    redirect_uri = _oauth_redirect_uri()
     authorization_url, state, code_verifier = begin_authorization(redirect_uri)
     session["oauth_state"] = state
     session["oauth_redirect_uri"] = redirect_uri
     session["oauth_code_verifier"] = code_verifier
     session["oauth_blog_id"] = blog_id
+    _save_pending_auth(state, redirect_uri, code_verifier, blog_id)
     return redirect(authorization_url)
 
 
 @app.route("/oauth2callback")
 def oauth2callback():
     if request.args.get("error"):
+        _pop_pending_auth(request.args.get("state"))
         _clear_oauth_session()
         flash("Google sign-in was cancelled.", "error")
         return redirect(url_for("admin"))
 
-    state = session.get("oauth_state")
-    redirect_uri = session.get("oauth_redirect_uri")
-    code_verifier = session.get("oauth_code_verifier")
+    returned_state = request.args.get("state")
+    pending = _pop_pending_auth(returned_state) or {}
+    state = session.get("oauth_state") or (returned_state if pending else None)
+    redirect_uri = session.get("oauth_redirect_uri") or pending.get("redirect_uri")
+    code_verifier = session.get("oauth_code_verifier") or pending.get("code_verifier")
     blog_id = session.get("oauth_blog_id")
+    if blog_id is None:
+        blog_id = pending.get("blog_id")
 
-    if not state or state != request.args.get("state") or not redirect_uri or not code_verifier:
+    if not state or state != returned_state or not redirect_uri or not code_verifier:
         _clear_oauth_session()
         flash("Google sign-in could not be verified. Try publishing again.", "error")
         return redirect(url_for("admin"))
 
     try:
-        finish_authorization(redirect_uri, request.url, state, code_verifier)
+        finish_authorization(
+            redirect_uri,
+            _authorization_response(redirect_uri),
+            state,
+            code_verifier,
+        )
     except Exception as exc:
         app.logger.error("Google token exchange failed: %s", type(exc).__name__)
         _clear_oauth_session()
